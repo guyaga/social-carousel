@@ -70,25 +70,36 @@ async function main() {
   const outDir = makeOutputDir(content.topic);
   console.log(`\n✓ Output dir: ${outDir}\n`);
 
-  const refs = [resolved?.logo, resolved?.person].filter(Boolean);
-
   // ── 6. Generate slides ──
   const tasks = [];
   for (const spec of specs) {
+    // Per-slide reference filtering: drop the person photo on slides that
+    // explicitly opt out (most listicle-style content slides). Defaults to
+    // including the person if a spec doesn't set `usePerson`.
+    const slideRefs = [
+      resolved?.logo,
+      spec.usePerson === false ? null : resolved?.person,
+    ].filter(Boolean);
+
+    const slideResolved = {
+      ...resolved,
+      person: spec.usePerson === false ? null : resolved?.person,
+    };
+
     const prompt = buildSlidePrompt({
       slideRole: spec.role,
       slideContent: spec.body,
       brand,
-      resolved,
+      resolved: slideResolved,
       slideNumber: spec.n,
       totalSlides: total,
     });
 
     if (model === "nano" || model === "both") {
-      tasks.push(genOne({ outDir, spec, prompt, refs, modelName: "nano", modelTag: model === "both" ? "nano" : null }));
+      tasks.push(genOne({ outDir, spec, prompt, refs: slideRefs, modelName: "nano", modelTag: model === "both" ? "nano" : null }));
     }
     if (model === "gpt2" || model === "both") {
-      tasks.push(genOne({ outDir, spec, prompt, refs, modelName: "gpt2", modelTag: model === "both" ? "gpt2" : null }));
+      tasks.push(genOne({ outDir, spec, prompt, refs: slideRefs, modelName: "gpt2", modelTag: model === "both" ? "gpt2" : null }));
     }
   }
   console.log(`Firing ${tasks.length} slide generation(s) in parallel…`);

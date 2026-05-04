@@ -1,6 +1,6 @@
 {
   "name": "10d10s-bonus-social-carousel",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Claude Code skill for generating branded multi-slide social carousels with AI image gen. Course bonus for 10 Days 10 Skills.",
   "type": "module",
   "bin": {
